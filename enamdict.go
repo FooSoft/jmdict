@@ -129,10 +129,10 @@ type enamTranslation struct {
 	Language string `xml:"lang,attr"`
 }
 
-func LoadEnamdict(reader io.Reader) ([]enamdictEntry, map[string]string, error) {
+func LoadEnamdict(reader io.Reader, transform bool) ([]enamdictEntry, map[string]string, error) {
 	var entries []enamdictEntry
 
-	entities, err := parseEntries(reader, func(decoder *xml.Decoder, element *xml.StartElement) error {
+	entities, err := parseEntries(reader, transform, func(decoder *xml.Decoder, element *xml.StartElement) error {
 		if element.Name.Local != "entry" {
 			return nil
 		}

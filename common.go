@@ -28,7 +28,9 @@ import (
 	"regexp"
 )
 
-func parseEntries(reader io.Reader, callback func(decoder *xml.Decoder, element *xml.StartElement) error) (map[string]string, error) {
+type Parser func(decoder *xml.Decoder, element *xml.StartElement) error
+
+func parseEntries(reader io.Reader, transform bool, callback Parser) (map[string]string, error) {
 	decoder := xml.NewDecoder(reader)
 
 	for {
@@ -40,7 +42,7 @@ func parseEntries(reader io.Reader, callback func(decoder *xml.Decoder, element 
 		switch startElement := token.(type) {
 		case xml.Directive:
 			directive := token.(xml.Directive)
-			decoder.Entity = parseEntities(&directive)
+			decoder.Entity = parseEntities(&directive, transform)
 		case xml.StartElement:
 			if err := callback(decoder, &startElement); err != nil {
 				return nil, err
@@ -51,13 +53,17 @@ func parseEntries(reader io.Reader, callback func(decoder *xml.Decoder, element 
 	return decoder.Entity, nil
 }
 
-func parseEntities(d *xml.Directive) map[string]string {
+func parseEntities(d *xml.Directive, transform bool) map[string]string {
 	re := regexp.MustCompile("<!ENTITY\\s([0-9\\-A-z]+)\\s\"(.+)\">")
 	matches := re.FindAllStringSubmatch(string(*d), -1)
 
 	entities := make(map[string]string)
 	for _, match := range matches {
-		entities[match[1]] = match[2]
+		if transform {
+			entities[match[1]] = match[2]
+		} else {
+			entities[match[1]] = match[1]
+		}
 	}
 
 	return entities

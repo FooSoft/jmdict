@@ -230,10 +230,10 @@ type edictSense struct {
 	Glossary []edictGlossary `xml:"gloss"`
 }
 
-func LoadEdict(reader io.Reader) ([]edictEntry, map[string]string, error) {
+func LoadEdict(reader io.Reader, transform bool) ([]edictEntry, map[string]string, error) {
 	var entries []edictEntry
 
-	entities, err := parseEntries(reader, func(decoder *xml.Decoder, element *xml.StartElement) error {
+	entities, err := parseEntries(reader, transform, func(decoder *xml.Decoder, element *xml.StartElement) error {
 		if element.Name.Local != "entry" {
 			return nil
 		}
