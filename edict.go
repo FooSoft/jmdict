@@ -25,7 +25,42 @@ package jmdict
 import (
 	"encoding/xml"
 	"io"
+	"log"
 )
+
+// Entries consist of kanji elements, reading elements,
+// general information and sense elements. Each entry must have at
+// least one reading element and one sense element. Others are optional.
+type edictEntry struct {
+	// A unique numeric sequence number for each entry
+	Sequence int `xml:"ent_seq"`
+
+	// The kanji element, or in its absence, the reading element, is
+	// the defining component of each entry.
+	// The overwhelming majority of entries will have a single kanji
+	// element associated with a word in Japanese. Where there are
+	// multiple kanji elements within an entry, they will be orthographical
+	// variants of the same word, either using variations in okurigana, or
+	// alternative and equivalent kanji. Common "mis-spellings" may be
+	// included, provided they are associated with appropriate information
+	// fields. Synonyms are not included; they may be indicated in the
+	// cross-reference field associated with the sense element.
+	Kanji []edictKanji `xml:"k_ele"`
+
+	// The reading element typically contains the valid readings
+	// of the word(s) in the kanji element using modern kanadzukai.
+	// Where there are multiple reading elements, they will typically be
+	// alternative readings of the kanji element. In the absence of a
+	// kanji element, i.e. in the case of a word or phrase written
+	// entirely in kana, these elements will define the entry.
+	Reading []edictReading `xml:"r_ele"`
+
+	// The sense element will record the translational equivalent
+	// of the Japanese word, plus other related information. Where there
+	// are several distinctly different meanings of the word, multiple
+	// sense elements will be employed.
+	Sense []edictSense `xml:"sense"`
+}
 
 type edictKanji struct {
 	// This element will contain a word or short phrase in Japanese
@@ -196,48 +231,10 @@ type edictSense struct {
 	Glossary []edictGlossary `xml:"gloss"`
 }
 
-// Entries consist of kanji elements, reading elements,
-// general information and sense elements. Each entry must have at
-// least one reading element and one sense element. Others are optional.
-type edictEntry struct {
-	// A unique numeric sequence number for each entry
-	Sequence int `xml:"ent_seq"`
-
-	// The kanji element, or in its absence, the reading element, is
-	// the defining component of each entry.
-	// The overwhelming majority of entries will have a single kanji
-	// element associated with a word in Japanese. Where there are
-	// multiple kanji elements within an entry, they will be orthographical
-	// variants of the same word, either using variations in okurigana, or
-	// alternative and equivalent kanji. Common "mis-spellings" may be
-	// included, provided they are associated with appropriate information
-	// fields. Synonyms are not included; they may be indicated in the
-	// cross-reference field associated with the sense element.
-	Kanji []edictKanji `xml:"k_ele"`
-
-	// The reading element typically contains the valid readings
-	// of the word(s) in the kanji element using modern kanadzukai.
-	// Where there are multiple reading elements, they will typically be
-	// alternative readings of the kanji element. In the absence of a
-	// kanji element, i.e. in the case of a word or phrase written
-	// entirely in kana, these elements will define the entry.
-	Reading []edictReading `xml:"r_ele"`
-
-	// The sense element will record the translational equivalent
-	// of the Japanese word, plus other related information. Where there
-	// are several distinctly different meanings of the word, multiple
-	// sense elements will be employed.
-	Sense []edictSense `xml:"sense"`
-}
-
-func LoadEdict(reader io.Reader) ([]edictEntry, error) {
-	var (
-		err     error
-		entries []edictEntry
-	)
-
+func LoadEdict(reader io.Reader) ([]edictEntry, map[string]string, error) {
 	decoder := xml.NewDecoder(reader)
 
+	var entries []edictEntry
 	for {
 		token, _ := decoder.Token()
 		if token == nil {
@@ -247,14 +244,16 @@ func LoadEdict(reader io.Reader) ([]edictEntry, error) {
 		switch startElement := token.(type) {
 		case xml.Directive:
 			directive := token.(xml.Directive)
+			var err error
 			if decoder.Entity, err = parseEntities(&directive); err != nil {
-				return nil, err
+				return nil, nil, err
 			}
+			log.Print(decoder.Entity)
 		case xml.StartElement:
 			if startElement.Name.Local == "entry" {
 				var entry edictEntry
 				if err := decoder.DecodeElement(&entry, &startElement); err != nil {
-					return nil, err
+					return nil, nil, err
 				}
 
 				entries = append(entries, entry)
@@ -262,5 +261,5 @@ func LoadEdict(reader io.Reader) ([]edictEntry, error) {
 		}
 	}
 
-	return entries, nil
+	return entries, decoder.Entity, nil
 }
