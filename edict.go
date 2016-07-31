@@ -30,7 +30,7 @@ import (
 // Entries consist of kanji elements, reading elements,
 // general information and sense elements. Each entry must have at
 // least one reading element and one sense element. Others are optional.
-type edictEntry struct {
+type EdictEntry struct {
 	// A unique numeric sequence number for each entry
 	Sequence int `xml:"ent_seq"`
 
@@ -44,7 +44,7 @@ type edictEntry struct {
 	// included, provided they are associated with appropriate information
 	// fields. Synonyms are not included; they may be indicated in the
 	// cross-reference field associated with the sense element.
-	Kanji []edictKanji `xml:"k_ele"`
+	Kanji []EdictKanji `xml:"k_ele"`
 
 	// The reading element typically contains the valid readings
 	// of the word(s) in the kanji element using modern kanadzukai.
@@ -52,16 +52,16 @@ type edictEntry struct {
 	// alternative readings of the kanji element. In the absence of a
 	// kanji element, i.e. in the case of a word or phrase written
 	// entirely in kana, these elements will define the entry.
-	Reading []edictReading `xml:"r_ele"`
+	Reading []EdictReading `xml:"r_ele"`
 
 	// The sense element will record the translational equivalent
 	// of the Japanese word, plus other related information. Where there
 	// are several distinctly different meanings of the word, multiple
 	// sense elements will be employed.
-	Sense []edictSense `xml:"sense"`
+	Sense []EdictSense `xml:"sense"`
 }
 
-type edictKanji struct {
+type EdictKanji struct {
 	// This element will contain a word or short phrase in Japanese
 	// which is written using at least one non-kana character (usually kanji,
 	// but can be other characters). The valid characters are
@@ -105,7 +105,7 @@ type edictKanji struct {
 	Priority []string `xml:"ke_pri"`
 }
 
-type edictReading struct {
+type EdictReading struct {
 	// This element content is restricted to kana and related
 	// characters such as chouon and kurikaeshi. Kana usage will be
 	// consistent between the keb and reb elements; e.g. if the keb
@@ -134,7 +134,7 @@ type edictReading struct {
 	Priority []string `xml:"re_pri"`
 }
 
-type edictSource struct {
+type EdictSource struct {
 	Content string `xml:",chardata"`
 
 	// The xml:lang attribute defines the language(s) from which
@@ -156,7 +156,7 @@ type edictSource struct {
 	Wasei string `xml:"ls_wasei,attr"`
 }
 
-type edictGlossary struct {
+type EdictGlossary struct {
 	Content string `xml:",chardata"`
 
 	// The xml:lang attribute defines the target language of the
@@ -171,7 +171,7 @@ type edictGlossary struct {
 	Gender string `xml:"g_gend"`
 }
 
-type edictSense struct {
+type EdictSense struct {
 	// These elements, if present, indicate that the sense is restricted
 	// to the lexeme represented by the keb and/or reb.
 	RestrictKanji   []string `xml:"stagk"`
@@ -200,7 +200,7 @@ type edictSense struct {
 	// Information about the field of application of the entry/sense.
 	// When absent, general application is implied. Entity coding for
 	// specific fields of application.
-	Field []string `xml:"field"`
+	Fields []string `xml:"field"`
 
 	// This element is used for other relevant information about
 	// the entry/sense. As with part-of-speech, information will usually
@@ -211,7 +211,7 @@ type edictSense struct {
 	// language(s) of a loan-word/gairaigo. If the source language is other
 	// than English, the language is indicated by the xml:lang attribute.
 	// The element value (if any) is the source word or phrase.
-	SourceLanguage []edictSource `xml:"lsource"`
+	SourceLanguage []EdictSource `xml:"lsource"`
 
 	// For words specifically associated with regional dialects in
 	// Japanese, the entity code for that dialect, e.g. ksb for Kansaiben.
@@ -227,18 +227,18 @@ type edictSense struct {
 	// target-language words or phrases which are equivalents to the
 	// Japanese word. This element would normally be present, however it
 	// may be omitted in entries which are purely for a cross-reference.
-	Glossary []edictGlossary `xml:"gloss"`
+	Glossary []EdictGlossary `xml:"gloss"`
 }
 
-func LoadEdict(reader io.Reader, transform bool) ([]edictEntry, map[string]string, error) {
-	var entries []edictEntry
+func LoadEdict(reader io.Reader, transform bool) ([]EdictEntry, map[string]string, error) {
+	var entries []EdictEntry
 
 	entities, err := parseEntries(reader, transform, func(decoder *xml.Decoder, element *xml.StartElement) error {
 		if element.Name.Local != "entry" {
 			return nil
 		}
 
-		var entry edictEntry
+		var entry EdictEntry
 		if err := decoder.DecodeElement(&entry, element); err != nil {
 			return err
 		}

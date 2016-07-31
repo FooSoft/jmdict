@@ -30,7 +30,7 @@ import (
 // Entries consist of kanji elements, reading elements
 // name translation elements. Each entry must have at
 // least one reading element and one sense element. Others are optional.
-type enamdictEntry struct {
+type EnamdictEntry struct {
 	// A unique numeric sequence number for each entry
 	Sequence int `xml:"ent_seq"`
 
@@ -44,7 +44,7 @@ type enamdictEntry struct {
 	// included, provided they are associated with appropriate information
 	// fields. Synonyms are not included; they may be indicated in the
 	// cross-reference field associated with the sense element.
-	Kanji []enamdictKanji `xml:"k_ele"`
+	Kanji []EnamdictKanji `xml:"k_ele"`
 
 	// The reading element typically contains the valid readings
 	// of the word(s) in the kanji element using modern kanadzukai.
@@ -52,14 +52,14 @@ type enamdictEntry struct {
 	// alternative readings of the kanji element. In the absence of a
 	// kanji element, i.e. in the case of a word or phrase written
 	// entirely in kana, these elements will define the entry.
-	Reading []enamdictReading `xml:"r_ele"`
+	Reading []EnamdictReading `xml:"r_ele"`
 
 	// The trans element will record the translational equivalent
 	// of the Japanese name, plus other related information.
-	Translation []enamTranslation `xml:"trans"`
+	Translation []EnamdictTranslation `xml:"trans"`
 }
 
-type enamdictKanji struct {
+type EnamdictKanji struct {
 	// This element will contain an entity name in Japanese
 	// which is written using at least one non-kana character (usually
 	// kanji, but can be other characters). The valid
@@ -82,7 +82,7 @@ type enamdictKanji struct {
 	Priority []string `xml:"ke_pri"`
 }
 
-type enamdictReading struct {
+type EnamdictReading struct {
 	// This element content is restricted to kana and related
 	// characters such as chouon and kurikaeshi. Kana usage will be
 	// consistent between the keb and reb elements; e.g. if the keb
@@ -104,7 +104,7 @@ type enamdictReading struct {
 	Priority []string `xml:"re_pri"`
 }
 
-type enamTranslation struct {
+type EnamdictTranslation struct {
 	// The type of name, recorded in the appropriate entity codes.
 	NameType []string `xml:"name_type"`
 
@@ -129,15 +129,15 @@ type enamTranslation struct {
 	Language string `xml:"lang,attr"`
 }
 
-func LoadEnamdict(reader io.Reader, transform bool) ([]enamdictEntry, map[string]string, error) {
-	var entries []enamdictEntry
+func LoadEnamdict(reader io.Reader, transform bool) ([]EnamdictEntry, map[string]string, error) {
+	var entries []EnamdictEntry
 
 	entities, err := parseEntries(reader, transform, func(decoder *xml.Decoder, element *xml.StartElement) error {
 		if element.Name.Local != "entry" {
 			return nil
 		}
 
-		var entry enamdictEntry
+		var entry EnamdictEntry
 		if err := decoder.DecodeElement(&entry, element); err != nil {
 			return err
 		}
