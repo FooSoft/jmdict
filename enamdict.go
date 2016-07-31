@@ -132,9 +132,13 @@ type enamTranslation struct {
 func LoadEnamdict(reader io.Reader) ([]enamdictEntry, map[string]string, error) {
 	var entries []enamdictEntry
 
-	entities, err := parseEntries(reader, func(decoder *xml.Decoder, element xml.StartElement) error {
+	entities, err := parseEntries(reader, func(decoder *xml.Decoder, element *xml.StartElement) error {
+		if element.Name.Local != "entry" {
+			return nil
+		}
+
 		var entry enamdictEntry
-		if err := decoder.DecodeElement(&entry, &element); err != nil {
+		if err := decoder.DecodeElement(&entry, element); err != nil {
 			return err
 		}
 

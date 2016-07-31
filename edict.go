@@ -22,8 +22,10 @@
 
 package jmdict
 
-import "io"
-import "encoding/xml"
+import (
+	"encoding/xml"
+	"io"
+)
 
 // Entries consist of kanji elements, reading elements,
 // general information and sense elements. Each entry must have at
@@ -231,9 +233,13 @@ type edictSense struct {
 func LoadEdict(reader io.Reader) ([]edictEntry, map[string]string, error) {
 	var entries []edictEntry
 
-	entities, err := parseEntries(reader, func(decoder *xml.Decoder, element xml.StartElement) error {
+	entities, err := parseEntries(reader, func(decoder *xml.Decoder, element *xml.StartElement) error {
+		if element.Name.Local != "entry" {
+			return nil
+		}
+
 		var entry edictEntry
-		if err := decoder.DecodeElement(&entry, &element); err != nil {
+		if err := decoder.DecodeElement(&entry, element); err != nil {
 			return err
 		}
 

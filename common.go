@@ -28,7 +28,7 @@ import (
 	"regexp"
 )
 
-func parseEntries(reader io.Reader, callback func(decoder *xml.Decoder, element xml.StartElement) error) (map[string]string, error) {
+func parseEntries(reader io.Reader, callback func(decoder *xml.Decoder, element *xml.StartElement) error) (map[string]string, error) {
 	decoder := xml.NewDecoder(reader)
 
 	for {
@@ -42,7 +42,7 @@ func parseEntries(reader io.Reader, callback func(decoder *xml.Decoder, element 
 			directive := token.(xml.Directive)
 			decoder.Entity = parseEntities(&directive)
 		case xml.StartElement:
-			if err := callback(decoder, startElement); err != nil {
+			if err := callback(decoder, &startElement); err != nil {
 				return nil, err
 			}
 		}
