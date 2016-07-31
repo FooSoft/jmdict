@@ -25,7 +25,6 @@ package jmdict
 import (
 	"encoding/xml"
 	"io"
-	"log"
 )
 
 // Entries consist of kanji elements, reading elements
@@ -131,34 +130,17 @@ type enamTranslation struct {
 }
 
 func LoadEnamdict(reader io.Reader) ([]enamdictEntry, map[string]string, error) {
-	decoder := xml.NewDecoder(reader)
-
 	var entries []enamdictEntry
-	for {
-		token, _ := decoder.Token()
-		if token == nil {
-			break
+
+	entities, err := parseEntries(reader, func(decoder *xml.Decoder, element xml.StartElement) error {
+		var entry enamdictEntry
+		if err := decoder.DecodeElement(&entry, &element); err != nil {
+			return err
 		}
 
-		switch startElement := token.(type) {
-		case xml.Directive:
-			directive := token.(xml.Directive)
-			var err error
-			if decoder.Entity, err = parseEntities(&directive); err != nil {
-				return nil, nil, err
-			}
-			log.Print(decoder.Entity)
-		case xml.StartElement:
-			if startElement.Name.Local == "entry" {
-				var entry enamdictEntry
-				if err := decoder.DecodeElement(&entry, &startElement); err != nil {
-					return nil, nil, err
-				}
+		entries = append(entries, entry)
+		return nil
+	})
 
-				entries = append(entries, entry)
-			}
-		}
-	}
-
-	return entries, decoder.Entity, nil
+	return entries, entities, err
 }

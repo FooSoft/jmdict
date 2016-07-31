@@ -24,10 +24,34 @@ package jmdict
 
 import (
 	"encoding/xml"
+	"io"
 	"regexp"
 )
 
-func parseEntities(d *xml.Directive) (map[string]string, error) {
+func parseEntries(reader io.Reader, callback func(decoder *xml.Decoder, element xml.StartElement) error) (map[string]string, error) {
+	decoder := xml.NewDecoder(reader)
+
+	for {
+		token, _ := decoder.Token()
+		if token == nil {
+			break
+		}
+
+		switch startElement := token.(type) {
+		case xml.Directive:
+			directive := token.(xml.Directive)
+			decoder.Entity = parseEntities(&directive)
+		case xml.StartElement:
+			if err := callback(decoder, startElement); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return decoder.Entity, nil
+}
+
+func parseEntities(d *xml.Directive) map[string]string {
 	re := regexp.MustCompile("<!ENTITY\\s([0-9\\-A-z]+)\\s\"(.+)\">")
 	matches := re.FindAllStringSubmatch(string(*d), -1)
 
@@ -36,5 +60,5 @@ func parseEntities(d *xml.Directive) (map[string]string, error) {
 		entities[match[1]] = match[2]
 	}
 
-	return entities, nil
+	return entities
 }
