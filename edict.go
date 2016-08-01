@@ -174,8 +174,8 @@ type EdictGlossary struct {
 type EdictSense struct {
 	// These elements, if present, indicate that the sense is restricted
 	// to the lexeme represented by the keb and/or reb.
-	RestrictKanji   []string `xml:"stagk"`
-	RestrictReading []string `xml:"stagr"`
+	RestrictedKanji    []string `xml:"stagk"`
+	RestrictedReadings []string `xml:"stagr"`
 
 	// This element is used to indicate a cross-reference to another
 	// entry with a similar or related meaning or sense. The content of
