@@ -52,7 +52,7 @@ type EdictEntry struct {
 	// alternative readings of the kanji element. In the absence of a
 	// kanji element, i.e. in the case of a word or phrase written
 	// entirely in kana, these elements will define the entry.
-	Reading []EdictReading `xml:"r_ele"`
+	Readings []EdictReading `xml:"r_ele"`
 
 	// The sense element will record the translational equivalent
 	// of the Japanese word, plus other related information. Where there
@@ -102,7 +102,7 @@ type EdictKanji struct {
 	// The reason both the kanji and reading elements are tagged is because
 	// on occasions a priority is only associated with a particular
 	// kanji/reading pair.
-	Priority []string `xml:"ke_pri"`
+	Priorities []string `xml:"ke_pri"`
 }
 
 type EdictReading struct {
@@ -131,7 +131,7 @@ type EdictReading struct {
 	Information []string `xml:"re_inf"`
 
 	// See the comment on ke_pri above.
-	Priority []string `xml:"re_pri"`
+	Priorities []string `xml:"re_pri"`
 }
 
 type EdictSource struct {
@@ -195,7 +195,7 @@ type EdictSense struct {
 	// appropriate entity codes. In general where there are multiple senses
 	// in an entry, the part-of-speech of an earlier sense will apply to
 	// later senses unless there is a new part-of-speech indicated.
-	PartOfSpeech []string `xml:"pos"`
+	PartsOfSpeech []string `xml:"pos"`
 
 	// Information about the field of application of the entry/sense.
 	// When absent, general application is implied. Entity coding for
@@ -211,11 +211,11 @@ type EdictSense struct {
 	// language(s) of a loan-word/gairaigo. If the source language is other
 	// than English, the language is indicated by the xml:lang attribute.
 	// The element value (if any) is the source word or phrase.
-	SourceLanguage []EdictSource `xml:"lsource"`
+	SourceLanguages []EdictSource `xml:"lsource"`
 
 	// For words specifically associated with regional dialects in
 	// Japanese, the entity code for that dialect, e.g. ksb for Kansaiben.
-	Dialect []string `xml:"dial"`
+	Dialects []string `xml:"dial"`
 
 	// The sense-information elements provided for additional
 	// information to be recorded about a sense. Typical usage would

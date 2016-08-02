@@ -52,11 +52,11 @@ type EnamdictEntry struct {
 	// alternative readings of the kanji element. In the absence of a
 	// kanji element, i.e. in the case of a word or phrase written
 	// entirely in kana, these elements will define the entry.
-	Reading []EnamdictReading `xml:"r_ele"`
+	Readings []EnamdictReading `xml:"r_ele"`
 
 	// The trans element will record the translational equivalent
 	// of the Japanese name, plus other related information.
-	Translation []EnamdictTranslation `xml:"trans"`
+	Translations []EnamdictTranslation `xml:"trans"`
 }
 
 type EnamdictKanji struct {
@@ -79,7 +79,7 @@ type EnamdictKanji struct {
 	// both the kanji and reading elements are tagged is because on
 	// occasions a priority is only associated with a particular
 	// kanji/reading pair.
-	Priority []string `xml:"ke_pri"`
+	Priorities []string `xml:"ke_pri"`
 }
 
 type EnamdictReading struct {
@@ -101,12 +101,12 @@ type EnamdictReading struct {
 	Information []string `xml:"re_inf"`
 
 	// See the comment on ke_pri above.
-	Priority []string `xml:"re_pri"`
+	Priorities []string `xml:"re_pri"`
 }
 
 type EnamdictTranslation struct {
 	// The type of name, recorded in the appropriate entity codes.
-	NameType []string `xml:"name_type"`
+	NameTypes []string `xml:"name_type"`
 
 	// This element is used to indicate a cross-reference to another
 	// entry with a similar or related meaning or sense. The content of
