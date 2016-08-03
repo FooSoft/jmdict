@@ -33,6 +33,7 @@ type Parser func(decoder *xml.Decoder, element *xml.StartElement) error
 func parseEntries(reader io.Reader, transform bool, callback Parser) (map[string]string, error) {
 	decoder := xml.NewDecoder(reader)
 
+	var entities map[string]string
 	for {
 		token, _ := decoder.Token()
 		if token == nil {
@@ -42,7 +43,15 @@ func parseEntries(reader io.Reader, transform bool, callback Parser) (map[string
 		switch startElement := token.(type) {
 		case xml.Directive:
 			directive := token.(xml.Directive)
-			decoder.Entity = parseEntities(&directive, transform)
+			entities = parseEntities(&directive)
+			if transform {
+				decoder.Entity = entities
+			} else {
+				decoder.Entity = make(map[string]string)
+				for k, _ := range entities {
+					decoder.Entity[k] = k
+				}
+			}
 		case xml.StartElement:
 			if err := callback(decoder, &startElement); err != nil {
 				return nil, err
@@ -50,20 +59,16 @@ func parseEntries(reader io.Reader, transform bool, callback Parser) (map[string
 		}
 	}
 
-	return decoder.Entity, nil
+	return entities, nil
 }
 
-func parseEntities(d *xml.Directive, transform bool) map[string]string {
+func parseEntities(d *xml.Directive) map[string]string {
 	re := regexp.MustCompile("<!ENTITY\\s([0-9\\-A-z]+)\\s\"(.+)\">")
 	matches := re.FindAllStringSubmatch(string(*d), -1)
 
 	entities := make(map[string]string)
 	for _, match := range matches {
-		if transform {
-			entities[match[1]] = match[2]
-		} else {
-			entities[match[1]] = match[1]
-		}
+		entities[match[1]] = match[2]
 	}
 
 	return entities
