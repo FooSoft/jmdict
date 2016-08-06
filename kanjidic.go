@@ -22,6 +22,11 @@
 
 package jmdict
 
+import (
+	"encoding/xml"
+	"io"
+)
+
 type KanjidicCharacter struct {
 	// The character itself in UTF8 coding.
 	Literal string `xml:"literal"`
@@ -257,10 +262,10 @@ type KanjidicQueryCodeValue struct {
 }
 
 type KanjidicReadingMeaning struct {
-	ReadingMeaning KandjicReadingMeaningGroup `xml:"rmgroup"`
+	ReadingMeaning KanjidicReadingMeaningGroup `xml:"rmgroup"`
 
 	// Japanese readings that are now only associated with names.
-	Nanori KanjidicNanori `xml:"nanori"`
+	Nanori []string `xml:"nanori"`
 }
 
 type KanjidicReadingMeaningGroup struct {
@@ -269,7 +274,7 @@ type KanjidicReadingMeaningGroup struct {
 	Readings []KanjidicReading `xml:"reading"`
 
 	// The meaning associated with the kanji.
-	Meanings []KanjidicMeanings `xml:"meanings"`
+	Meanings []KanjidicMeaning `xml:"meaning"`
 }
 
 type KanjidicReading struct {
@@ -307,7 +312,31 @@ type KanjidicReading struct {
 }
 
 type KanjidicMeaning struct {
+	// The meaning associated with the kanji.
+	Meaning string `xml:",chardata"`
+
+	// The m_lang attribute defines the target language of the meaning. It
+	// will be coded using the two-letter language code from the ISO 639-1
+	// standard. When absent, the value "en" (i.e. English) is implied. [{}]
+	Language string `xml:"m_lang,attr"`
 }
 
-type KanjidicNanori struct {
+func LoadKanjidic(reader io.Reader) ([]KanjidicCharacter, error) {
+	var characters []KanjidicCharacter
+
+	_, err := parseEntries(reader, false, func(decoder *xml.Decoder, element *xml.StartElement) error {
+		if element.Name.Local != "entry" {
+			return nil
+		}
+
+		var character KanjidicCharacter
+		if err := decoder.DecodeElement(&character, element); err != nil {
+			return err
+		}
+
+		characters = append(characters, character)
+		return nil
+	})
+
+	return characters, err
 }
