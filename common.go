@@ -30,7 +30,39 @@ import (
 
 type Parser func(decoder *xml.Decoder, element *xml.StartElement) error
 
-func parseEntries(reader io.Reader, transform bool, callback Parser) (map[string]string, error) {
+func parseDoc(reader io.Reader, container interface{}, transform bool) (map[string]string, error) {
+	decoder := xml.NewDecoder(reader)
+
+	var entities map[string]string
+	for {
+		token, _ := decoder.Token()
+		if token == nil {
+			break
+		}
+
+		switch startElement := token.(type) {
+		case xml.Directive:
+			directive := token.(xml.Directive)
+			entities = parseEntities(&directive)
+			if transform {
+				decoder.Entity = entities
+			} else {
+				decoder.Entity = make(map[string]string)
+				for k, _ := range entities {
+					decoder.Entity[k] = k
+				}
+			}
+		case xml.StartElement:
+			if err := decoder.DecodeElement(container, &startElement); err != nil {
+				return nil, err
+			}
+		}
+	}
+
+	return entities, nil
+}
+
+func parseDocument(reader io.Reader, transform bool, callback Parser) (map[string]string, error) {
 	decoder := xml.NewDecoder(reader)
 
 	var entities map[string]string

@@ -22,10 +22,29 @@
 
 package jmdict
 
-import (
-	"encoding/xml"
-	"io"
-)
+import "io"
+
+type Kanjidic struct {
+	// The single header element will contain identification information
+	// about the version of the file
+	Header KanjidicHeader `xml:"header"`
+
+	Characters []KanjidicCharacter `xml:"character"`
+}
+
+type KanjidicHeader struct {
+	// This field denotes the version of kanjidic2 structure, as more
+	// than one version may exist.
+	FileVersion string `xml:"file_version"`
+
+	// The version of the file, in the format YYYY-NN, where NN will be
+	// a number starting with 01 for the first version released in a
+	// calendar year, then increasing for each version in that year.
+	DatabaseVersion string `xml:"database_version"`
+
+	// The date the file was created in international format (YYYY-MM-DD).
+	DateOfCreation string `xml:"date_of_creation"`
+}
 
 type KanjidicCharacter struct {
 	// The character itself in UTF8 coding.
@@ -33,38 +52,34 @@ type KanjidicCharacter struct {
 
 	// The codepoint element states the code of the character in the various
 	// character set standards.
-	Codepoint KanjidicCodepoint `xml:"codepoint"`
+	Codepoint []KanjidicCodepoint `xml:"codepoint>cp_value"`
 
 	// The radical number, in the range 1 to 214. The particular
 	// classification type is stated in the rad_type attribute.
-	Radical KanjidicRadical `xml:"rad_value"`
+	Radical []KanjidicRadical `xml:"radical>rad_value"`
 
 	Misc KanjidicMisc `xml:"misc"`
 
 	// This element contains the index numbers and similar unstructured
 	// information such as page numbers in a number of published dictionaries,
 	// and instructional books on kanji.
-	DictionaryNumbers KanjidicDicNumber `xml:"dic_number"`
+	DictionaryNumbers []KanjidicDicNumber `xml:"dic_number>dic_ref"`
 
 	// These codes contain information relating to the glyph, and can be used
 	// for finding a required kanji. The type of code is defined by the
 	// qc_type attribute.
-	QueryCode KanjidicQueryCode `xml:"query_code"`
+	QueryCode *KanjidicQueryCode `xml:"query_code>q_code"`
 
 	// The readings for the kanji in several languages, and the meanings, also
 	// in several languages. The readings and meanings are grouped to enable
 	// the handling of the situation where the meaning is differentiated by
 	// reading. [T1]
-	ReadingMeaning KanjidicReadingMeaning `xml:"reading_meaning"`
+	ReadingMeaning *KanjidicReadingMeaning `xml:"reading_meaning"`
 }
 
 type KanjidicCodepoint struct {
 	// The cp_value contains the codepoint of the character in a particular
 	// standard. The standard will be identified in the cp_type attribute.
-	Values []KanjidicCodepointValue `xml:"cp_value"`
-}
-
-type KanjidicCodepointValue struct {
 	Value string `xml:",chardata"`
 
 	// The cp_type attribute states the coding standard applying to the
@@ -77,12 +92,6 @@ type KanjidicCodepointValue struct {
 }
 
 type KanjidicRadical struct {
-	// The radical number, in the range 1 to 214. The particular
-	// classification type is stated in the rad_type attribute.
-	Values []KanjidicCodepointValue `xml:"rad_value"`
-}
-
-type KanjidicRadicalValue struct {
 	Value string `xml:",chardata"`
 
 	// The rad_type attribute states the type of radical classification.
@@ -99,7 +108,7 @@ type KanjidicMisc struct {
 	// 8 indicates it is one of the remaining Jouyou Kanji to be learned
 	// in junior high school, and 9 or 10 indicates it is a Jinmeiyou (for use
 	// in names) kanji. [G]
-	Grade string `xml:"grade"`
+	Grade *string `xml:"grade"`
 
 	// The stroke count of the kanji, including the radical. If more than
 	// one, the first is considered the accepted count, while subsequent ones
@@ -111,7 +120,7 @@ type KanjidicMisc struct {
 	// Either a cross-reference code to another kanji, usually regarded as a
 	// variant, or an alternative indexing code for the current kanji.
 	// The type of variant is given in the var_type attribute.
-	Variant KanjidicVariant `xml:"variant"`
+	Variants []KanjidicVariant `xml:"variant"`
 
 	// A frequency-of-use ranking. The 2,500 most-used characters have a
 	// ranking; those characters that lack this field are not ranked. The
@@ -121,11 +130,11 @@ type KanjidicMisc struct {
 	// used in newspaper articles. The discrimination between the less
 	// frequently used kanji is not strong. (Actually there are 2,501
 	// kanji ranked as there was a tie.)
-	Frequency string `xml:"freq"`
+	Frequency *string `xml:"freq"`
 
 	// When the kanji is itself a radical and has a name, this element
 	// contains the name (in hiragana.) [T2]
-	RadicalName string `xml:"rad_name"`
+	RadicalName []string `xml:"rad_name"`
 
 	// The (former) Japanese Language Proficiency test level for this kanji.
 	// Values range from 1 (most advanced) to 4 (most elementary). This field
@@ -135,7 +144,7 @@ type KanjidicMisc struct {
 	// available for the new levels. The new levels are regarded as
 	// being similar to the old levels except that the old level 2 is
 	// now divided between N2 and N3.
-	JlptLevel string `xml:"jlpt"`
+	JlptLevel *string `xml:"jlpt"`
 }
 
 type KanjidicVariant struct {
@@ -158,12 +167,6 @@ type KanjidicVariant struct {
 }
 
 type KanjidicDicNumber struct {
-	// Each dic_ref contains an index number. The particular dictionary,
-	// etc. is defined by the dr_type attribute.
-	DictionaryReferences []KanjiDicReference `xml:"dic_ref"`
-}
-
-type KanjiDicReference struct {
 	// The dr_type defines the dictionary or reference book, etc. to which
 	// dic_ref element applies. The initial allocation is:
 	//   nelson_c - "Modern Reader's Japanese-English Character Dictionary",
@@ -216,12 +219,6 @@ type KanjiDicReference struct {
 }
 
 type KanjidicQueryCode struct {
-	// The q_code contains the actual query-code value, according to the
-	// qc_type attribute.
-	Values []KanjidicQueryCodeValue `xml:"q_code"`
-}
-
-type KanjidicQueryCodeValue struct {
 	Value string `xml:",chardata"`
 
 	// The qc_type attribute defines the type of query code. The current values
@@ -262,19 +259,15 @@ type KanjidicQueryCodeValue struct {
 }
 
 type KanjidicReadingMeaning struct {
-	ReadingMeaning KanjidicReadingMeaningGroup `xml:"rmgroup"`
+	// The reading element contains the reading or pronunciation
+	// of the kanji.
+	Readings []KanjidicReading `xml:"rmgroup>reading"`
+
+	// The meaning associated with the kanji.
+	Meanings []KanjidicMeaning `xml:"rmgroup>meaning"`
 
 	// Japanese readings that are now only associated with names.
 	Nanori []string `xml:"nanori"`
-}
-
-type KanjidicReadingMeaningGroup struct {
-	// The reading element contains the reading or pronunciation
-	// of the kanji.
-	Readings []KanjidicReading `xml:"reading"`
-
-	// The meaning associated with the kanji.
-	Meanings []KanjidicMeaning `xml:"meaning"`
 }
 
 type KanjidicReading struct {
@@ -321,22 +314,8 @@ type KanjidicMeaning struct {
 	Language string `xml:"m_lang,attr"`
 }
 
-func LoadKanjidic(reader io.Reader) ([]KanjidicCharacter, error) {
-	var characters []KanjidicCharacter
-
-	_, err := parseEntries(reader, false, func(decoder *xml.Decoder, element *xml.StartElement) error {
-		if element.Name.Local != "character" {
-			return nil
-		}
-
-		var character KanjidicCharacter
-		if err := decoder.DecodeElement(&character, element); err != nil {
-			return err
-		}
-
-		characters = append(characters, character)
-		return nil
-	})
-
-	return characters, err
+func LoadKanjidic(reader io.Reader) (Kanjidic, error) {
+	var kanjidic Kanjidic
+	_, err := parseDoc(reader, &kanjidic, false)
+	return kanjidic, err
 }

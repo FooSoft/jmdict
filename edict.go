@@ -233,7 +233,7 @@ type EdictSense struct {
 func LoadEdict(reader io.Reader, transform bool) ([]EdictEntry, map[string]string, error) {
 	var entries []EdictEntry
 
-	entities, err := parseEntries(reader, transform, func(decoder *xml.Decoder, element *xml.StartElement) error {
+	entities, err := parseDocument(reader, transform, func(decoder *xml.Decoder, element *xml.StartElement) error {
 		if element.Name.Local != "entry" {
 			return nil
 		}
