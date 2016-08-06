@@ -302,7 +302,7 @@ type KanjidicReading struct {
 	//   	marked with a "-". A second attribute r_status, if present,
 	//   	will indicate with a value of "jy" whether the reading is
 	//   	approved for a "Jouyou kanji".
-	Type string `xml:"r_type"`
+	Type string `xml:"r_type,attr"`
 
 	// See under ja_on above.
 	OnType *string `xml:"on_type"`
