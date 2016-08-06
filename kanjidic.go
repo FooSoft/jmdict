@@ -325,7 +325,7 @@ func LoadKanjidic(reader io.Reader) ([]KanjidicCharacter, error) {
 	var characters []KanjidicCharacter
 
 	_, err := parseEntries(reader, false, func(decoder *xml.Decoder, element *xml.StartElement) error {
-		if element.Name.Local != "entry" {
+		if element.Name.Local != "character" {
 			return nil
 		}
 
