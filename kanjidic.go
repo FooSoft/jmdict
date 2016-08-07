@@ -315,7 +315,7 @@ type KanjidicMeaning struct {
 }
 
 func LoadKanjidic(reader io.Reader) (Kanjidic, error) {
-	var kanjidic Kanjidic
-	_, err := parseDoc(reader, &kanjidic, false)
-	return kanjidic, err
+	var dic Kanjidic
+	_, err := parseDict(reader, &dic, true)
+	return dic, err
 }

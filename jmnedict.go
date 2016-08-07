@@ -22,15 +22,16 @@
 
 package jmdict
 
-import (
-	"encoding/xml"
-	"io"
-)
+import "io"
 
-// Entries consist of kanji elements, reading elements
-// name translation elements. Each entry must have at
-// least one reading element and one sense element. Others are optional.
-type EnamdictEntry struct {
+type Jmnedict struct {
+	// Entries consist of kanji elements, reading elements
+	// name translation elements. Each entry must have at
+	// least one reading element and one sense element. Others are optional.
+	Entries []JmnedictEntry `xml:"entry"`
+}
+
+type JmnedictEntry struct {
 	// A unique numeric sequence number for each entry
 	Sequence int `xml:"ent_seq"`
 
@@ -44,7 +45,7 @@ type EnamdictEntry struct {
 	// included, provided they are associated with appropriate information
 	// fields. Synonyms are not included; they may be indicated in the
 	// cross-reference field associated with the sense element.
-	Kanji []EnamdictKanji `xml:"k_ele"`
+	Kanji []JmnedictKanji `xml:"k_ele"`
 
 	// The reading element typically contains the valid readings
 	// of the word(s) in the kanji element using modern kanadzukai.
@@ -52,14 +53,14 @@ type EnamdictEntry struct {
 	// alternative readings of the kanji element. In the absence of a
 	// kanji element, i.e. in the case of a word or phrase written
 	// entirely in kana, these elements will define the entry.
-	Readings []EnamdictReading `xml:"r_ele"`
+	Readings []JmnedictReading `xml:"r_ele"`
 
 	// The trans element will record the translational equivalent
 	// of the Japanese name, plus other related information.
-	Translations []EnamdictTranslation `xml:"trans"`
+	Translations []JmnedictTranslation `xml:"trans"`
 }
 
-type EnamdictKanji struct {
+type JmnedictKanji struct {
 	// This element will contain an entity name in Japanese
 	// which is written using at least one non-kana character (usually
 	// kanji, but can be other characters). The valid
@@ -82,7 +83,7 @@ type EnamdictKanji struct {
 	Priorities []string `xml:"ke_pri"`
 }
 
-type EnamdictReading struct {
+type JmnedictReading struct {
 	// This element content is restricted to kana and related
 	// characters such as chouon and kurikaeshi. Kana usage will be
 	// consistent between the keb and reb elements; e.g. if the keb
@@ -104,7 +105,7 @@ type EnamdictReading struct {
 	Priorities []string `xml:"re_pri"`
 }
 
-type EnamdictTranslation struct {
+type JmnedictTranslation struct {
 	// The type of name, recorded in the appropriate entity codes.
 	NameTypes []string `xml:"name_type"`
 
@@ -129,22 +130,14 @@ type EnamdictTranslation struct {
 	Language string `xml:"lang,attr"`
 }
 
-func LoadEnamdict(reader io.Reader, transform bool) ([]EnamdictEntry, map[string]string, error) {
-	var entries []EnamdictEntry
+func LoadJmnedict(reader io.Reader) (Jmnedict, map[string]string, error) {
+	var dic Jmnedict
+	entities, err := parseDict(reader, &dic, true)
+	return dic, entities, err
+}
 
-	entities, err := parseDocument(reader, transform, func(decoder *xml.Decoder, element *xml.StartElement) error {
-		if element.Name.Local != "entry" {
-			return nil
-		}
-
-		var entry EnamdictEntry
-		if err := decoder.DecodeElement(&entry, element); err != nil {
-			return err
-		}
-
-		entries = append(entries, entry)
-		return nil
-	})
-
-	return entries, entities, err
+func LoadJmnedictNoTransform(reader io.Reader) (Jmnedict, map[string]string, error) {
+	var dic Jmnedict
+	entities, err := parseDict(reader, &dic, false)
+	return dic, entities, err
 }

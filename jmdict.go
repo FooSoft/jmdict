@@ -22,15 +22,16 @@
 
 package jmdict
 
-import (
-	"encoding/xml"
-	"io"
-)
+import "io"
 
-// Entries consist of kanji elements, reading elements,
-// general information and sense elements. Each entry must have at
-// least one reading element and one sense element. Others are optional.
-type EdictEntry struct {
+type Jmdict struct {
+	// Entries consist of kanji elements, reading elements,
+	// general information and sense elements. Each entry must have at
+	// least one reading element and one sense element. Others are optional.
+	Entries []JmdictEntry `xml:"entry"`
+}
+
+type JmdictEntry struct {
 	// A unique numeric sequence number for each entry
 	Sequence int `xml:"ent_seq"`
 
@@ -44,7 +45,7 @@ type EdictEntry struct {
 	// included, provided they are associated with appropriate information
 	// fields. Synonyms are not included; they may be indicated in the
 	// cross-reference field associated with the sense element.
-	Kanji []EdictKanji `xml:"k_ele"`
+	Kanji []JmdictKanji `xml:"k_ele"`
 
 	// The reading element typically contains the valid readings
 	// of the word(s) in the kanji element using modern kanadzukai.
@@ -52,16 +53,16 @@ type EdictEntry struct {
 	// alternative readings of the kanji element. In the absence of a
 	// kanji element, i.e. in the case of a word or phrase written
 	// entirely in kana, these elements will define the entry.
-	Readings []EdictReading `xml:"r_ele"`
+	Readings []JmdictReading `xml:"r_ele"`
 
 	// The sense element will record the translational equivalent
 	// of the Japanese word, plus other related information. Where there
 	// are several distinctly different meanings of the word, multiple
 	// sense elements will be employed.
-	Sense []EdictSense `xml:"sense"`
+	Sense []JmdictSense `xml:"sense"`
 }
 
-type EdictKanji struct {
+type JmdictKanji struct {
 	// This element will contain a word or short phrase in Japanese
 	// which is written using at least one non-kana character (usually kanji,
 	// but can be other characters). The valid characters are
@@ -105,7 +106,7 @@ type EdictKanji struct {
 	Priorities []string `xml:"ke_pri"`
 }
 
-type EdictReading struct {
+type JmdictReading struct {
 	// This element content is restricted to kana and related
 	// characters such as chouon and kurikaeshi. Kana usage will be
 	// consistent between the keb and reb elements; e.g. if the keb
@@ -134,7 +135,7 @@ type EdictReading struct {
 	Priorities []string `xml:"re_pri"`
 }
 
-type EdictSource struct {
+type JmdictSource struct {
 	Content string `xml:",chardata"`
 
 	// The xml:lang attribute defines the language(s) from which
@@ -156,7 +157,7 @@ type EdictSource struct {
 	Wasei string `xml:"ls_wasei,attr"`
 }
 
-type EdictGlossary struct {
+type JmdictGlossary struct {
 	Content string `xml:",chardata"`
 
 	// The xml:lang attribute defines the target language of the
@@ -171,7 +172,7 @@ type EdictGlossary struct {
 	Gender string `xml:"g_gend"`
 }
 
-type EdictSense struct {
+type JmdictSense struct {
 	// These elements, if present, indicate that the sense is restricted
 	// to the lexeme represented by the keb and/or reb.
 	RestrictedKanji    []string `xml:"stagk"`
@@ -211,7 +212,7 @@ type EdictSense struct {
 	// language(s) of a loan-word/gairaigo. If the source language is other
 	// than English, the language is indicated by the xml:lang attribute.
 	// The element value (if any) is the source word or phrase.
-	SourceLanguages []EdictSource `xml:"lsource"`
+	SourceLanguages []JmdictSource `xml:"lsource"`
 
 	// For words specifically associated with regional dialects in
 	// Japanese, the entity code for that dialect, e.g. ksb for Kansaiben.
@@ -227,25 +228,17 @@ type EdictSense struct {
 	// target-language words or phrases which are equivalents to the
 	// Japanese word. This element would normally be present, however it
 	// may be omitted in entries which are purely for a cross-reference.
-	Glossary []EdictGlossary `xml:"gloss"`
+	Glossary []JmdictGlossary `xml:"gloss"`
 }
 
-func LoadEdict(reader io.Reader, transform bool) ([]EdictEntry, map[string]string, error) {
-	var entries []EdictEntry
+func LoadJmdict(reader io.Reader) (Jmdict, map[string]string, error) {
+	var dict Jmdict
+	entities, err := parseDict(reader, &dict, true)
+	return dict, entities, err
+}
 
-	entities, err := parseDocument(reader, transform, func(decoder *xml.Decoder, element *xml.StartElement) error {
-		if element.Name.Local != "entry" {
-			return nil
-		}
-
-		var entry EdictEntry
-		if err := decoder.DecodeElement(&entry, element); err != nil {
-			return err
-		}
-
-		entries = append(entries, entry)
-		return nil
-	})
-
-	return entries, entities, err
+func LoadJmdictNoTransform(reader io.Reader) (Jmdict, map[string]string, error) {
+	var dict Jmdict
+	entities, err := parseDict(reader, &dict, false)
+	return dict, entities, err
 }
