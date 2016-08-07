@@ -311,7 +311,7 @@ type KanjidicMeaning struct {
 	// The m_lang attribute defines the target language of the meaning. It
 	// will be coded using the two-letter language code from the ISO 639-1
 	// standard. When absent, the value "en" (i.e. English) is implied. [{}]
-	Language string `xml:"m_lang,attr"`
+	Language *string `xml:"m_lang,attr"`
 }
 
 func LoadKanjidic(reader io.Reader) (Kanjidic, error) {

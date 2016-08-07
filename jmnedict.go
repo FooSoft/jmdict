@@ -127,7 +127,7 @@ type JmnedictTranslation struct {
 	// code from the ISO 639-2 standard. When absent, the value "eng"
 	// (i.e. English) is the default value. The bibliographic (B) codes
 	// are used.
-	Language string `xml:"lang,attr"`
+	Language *string `xml:"lang,attr"`
 }
 
 func LoadJmnedict(reader io.Reader) (Jmnedict, map[string]string, error) {

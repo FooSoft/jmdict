@@ -142,13 +142,13 @@ type JmdictSource struct {
 	// a loanword is drawn.  It will be coded using the three-letter language
 	// code from the ISO 639-2 standard. When absent, the value "eng" (i.e.
 	// English) is the default value. The bibliographic (B) codes are used.
-	Language string `xml:"lang,attr"`
+	Language *string `xml:"lang,attr"`
 
 	// The ls_type attribute indicates whether the lsource element
 	// fully or partially describes the source word or phrase of the
 	// loanword. If absent, it will have the implied value of "full".
 	// Otherwise it will contain "part".
-	Type string `xml:"ls_type,attr"`
+	Type *string `xml:"ls_type,attr"`
 
 	// The ls_wasei attribute indicates that the Japanese word
 	// has been constructed from words in the source language, and
@@ -164,12 +164,12 @@ type JmdictGlossary struct {
 	// gloss. It will be coded using the three-letter language code from
 	// the ISO 639 standard. When absent, the value "eng" (i.e. English)
 	// is the default value.
-	Language string `xml:"lang,attr"`
+	Language *string `xml:"lang,attr"`
 
 	// The g_gend attribute defines the gender of the gloss (typically
 	// a noun in the target language. When absent, the gender is either
 	// not relevant or has yet to be provided.
-	Gender string `xml:"g_gend"`
+	Gender *string `xml:"g_gend"`
 }
 
 type JmdictSense struct {
