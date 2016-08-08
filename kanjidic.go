@@ -167,6 +167,8 @@ type KanjidicVariant struct {
 }
 
 type KanjidicDicNumber struct {
+	Value string `xml:",chardata"`
+
 	// The dr_type defines the dictionary or reference book, etc. to which
 	// dic_ref element applies. The initial allocation is:
 	//   nelson_c - "Modern Reader's Japanese-English Character Dictionary",
