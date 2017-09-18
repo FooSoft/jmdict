@@ -68,7 +68,7 @@ type KanjidicCharacter struct {
 	// These codes contain information relating to the glyph, and can be used
 	// for finding a required kanji. The type of code is defined by the
 	// qc_type attribute.
-	QueryCode *KanjidicQueryCode `xml:"query_code>q_code"`
+	QueryCode []KanjidicQueryCode `xml:"query_code>q_code"`
 
 	// The readings for the kanji in several languages, and the meanings, also
 	// in several languages. The readings and meanings are grouped to enable
