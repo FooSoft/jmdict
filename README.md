@@ -1,4 +1,4 @@
-# JMDict #
+# JMDict
 
 JMDict is a simple library written in Go for parsing the raw data files for the
 [JMDict](http://www.edrdg.org/jmdict/j_jmdict.html) (vocabulary)
