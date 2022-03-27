@@ -172,7 +172,7 @@ type JmdictGlossary struct {
 	Gender *string `xml:"g_gend"`
 
 	// g_type attribute added in jmdict Rev 1.09
-	// At present the values used are "lit", "fig" and "expl". It is
+	// At present the values used are "lit", "fig", "expl" and "tm". It is
 	// proposed to add a "descr" value to indicate a gloss which is a
 	// description of the Japanese term rather than a translation or an
 	// explanation of the meaning. 
