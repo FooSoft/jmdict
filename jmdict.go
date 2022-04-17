@@ -236,6 +236,37 @@ type JmdictSense struct {
 	// Japanese word. This element would normally be present, however it
 	// may be omitted in entries which are purely for a cross-reference.
 	Glossary []JmdictGlossary `xml:"gloss"`
+
+	// Some JMdict entries can contain 0 or more examples
+	Examples []JmdictExample `xml:"example"`
+}
+
+type JmdictExample struct {
+	// Each example has a Srce element that indicates the source of the example
+	// the source is typically the  Tatoeba Project
+	Srce JmdictExampleSource `xml:"ex_srce"`
+
+	// The term associated with this example
+	Text string `xml:"ex_text"`
+
+	// Contains the Example sentences
+	Sentences []JmdictExampleSentence `xml:"ex_sent"`
+}
+
+type JmdictExampleSource struct {
+	// The id of the example for the source
+	ID string `xml:",chardata"`
+
+	// The source type (i.e. 'tat' for tatoeba)
+	SrcType string `xml:"exsrc_type,attr"`
+}
+
+type JmdictExampleSentence struct {
+	// The language of the example sentence
+	Lang string `xml:"lang,attr"`
+
+	// The example sentence text
+	Text string `xml:",chardata"`
 }
 
 func LoadJmdict(reader io.Reader) (Jmdict, map[string]string, error) {
