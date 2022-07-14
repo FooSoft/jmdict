@@ -1,12 +1,3 @@
-<!-- +++
-Area = "projects"
-GitHub = "jmdict"
-Layout = "page"
-Tags = ["golang", "japanese", "mit license"]
-Description = "Library for processing JMDict, JMnedict, and KANJDIC Japanese dictionaries."
-Collection = "ProjectsComplete"
-+++ -->
-
 # JMDict
 
 JMDict is a simple library written in Go for parsing the raw data files for the
